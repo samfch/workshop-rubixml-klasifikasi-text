@@ -1,0 +1,3 @@
+- pilih algoritma sesuai dengan TA anda
+- pastikan path data dan model disimpan disesuaikan dengan susunan folder anda
+- pastikan data anda bersih
