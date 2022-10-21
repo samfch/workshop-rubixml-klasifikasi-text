@@ -1,18 +1,12 @@
 <?php
-use Rubix\ML\Benchmarks\Tokenizers\WhitespaceBench;
-use Rubix\ML\Loggers\Screen;
-use Rubix\ML\Tokenizers\Word;
-use Rubix\ML\Transformers\MultibyteTextNormalizer;
-use Rubix\ML\Transformers\TfIdfTransformer;
-
 require_once('vendor/autoload.php');
 
+use Rubix\ML\Loggers\Screen;
+use Rubix\ML\Tokenizers\Word;
 use Rubix\ML\Pipeline;
 use Rubix\ML\Extractors\CSV;
 use Rubix\ML\Datasets\Labeled;
 use Rubix\ML\Tokenizers\WordStemmer;
-use Sastrawi\Stemmer\StemmerFactory;
-use Wamania\Snowball\StemmerFactory as WS;
 use Rubix\ML\Extractors\Concatenator;
 use Rubix\ML\Transformers\RegexFilter;
 use Rubix\ML\Transformers\LambdaFunction;
@@ -88,7 +82,15 @@ $stemmeringgris = function (&$sample, $offset, $context) {
 
 
 //fungsi stemmer bahasa indonesia dengan library sastrawi
-// ON PROGRESS
+$stemmerindo = function (&$sample, $offset, $context) {
+    $stemmerFactory = new \Sastrawi\Stemmer\StemmerFactory();
+    $stemmer_id = $stemmerFactory->createStemmer();
+
+    foreach ($sample as $s) {
+        $stemmed =  $stemmer_id->stem($s);
+        $sample[0] = $stemmed;
+    }
+};
 
 //stopword-id untuk bhs indonesia, stopword-en untuk bhs inggris
 $stopwords_id = file("stopword-en.txt", FILE_IGNORE_NEW_LINES);
@@ -101,8 +103,9 @@ $estimator = new Pipeline([
     new StopWordFilter($stopwords_id),
     new TextNormalizer(),
     new LambdaFunction($stemmeringgris, 'stemmeringgris'),
+    // new LambdaFunction($stemmerindo, 'stemmerindo'),
     new WordCountVectorizer(),
-], new KNearestNeighbors(3), true);
+], new KNearestNeighbors(15), true);
 
 //proses training
 $estimator->train($training);
